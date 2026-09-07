@@ -1,0 +1,44 @@
+# Pricing catalog — NOT hardcoded, read from here.
+# Unit: USD per 1,000,000 tokens. Prices are written IN QUOTES; a float is
+# rejected outright by pricing.py (the Decimal(float) trap).
+#
+# cached_input_per_mtok: the prompt-cache READ price. On Anthropic that is
+# roughly 10% of the input price. Delete the line to disable the discount.
+#
+# VERIFY: these figures are Anthropic list prices as of 2026-09. Fill in the
+# OpenAI and Gemini rows from your own billing page; leaving a row out beats
+# guessing — for a model missing from the catalog, model-probe prints
+# "window not in catalog" and reports zero cost.
+
+[models."claude-opus-5"]
+input_per_mtok = "5.00"
+output_per_mtok = "25.00"
+cached_input_per_mtok = "0.50"
+context_window = 1000000
+max_output_tokens = 128000
+
+[models."claude-sonnet-5"]
+input_per_mtok = "2.00"
+output_per_mtok = "10.00"
+cached_input_per_mtok = "0.20"
+context_window = 1000000
+max_output_tokens = 128000
+
+[models."claude-haiku-4-5"]
+input_per_mtok = "1.00"
+output_per_mtok = "5.00"
+cached_input_per_mtok = "0.10"
+context_window = 200000
+max_output_tokens = 64000
+
+# --- fill in from your own billing page ---------------------------------
+# [models."gpt-5.5"]
+# input_per_mtok = "0.00"
+# output_per_mtok = "0.00"
+# cached_input_per_mtok = "0.00"
+# context_window = 0
+#
+# [models."gemini-3-pro"]
+# input_per_mtok = "0.00"
+# output_per_mtok = "0.00"
+# context_window = 0

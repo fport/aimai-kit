@@ -1,0 +1,5 @@
+Summarize the following in a single sentence and write nothing else:
+
+Latency for a language-model service in production should be reported with
+percentiles rather than a mean, because the distribution is skewed and what
+users actually feel is p95.
