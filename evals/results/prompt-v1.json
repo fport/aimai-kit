@@ -1,0 +1,103 @@
+{
+  "ran_at": "2026-09-07T11:06:24.967297+00:00",
+  "prompt_ref": "extract_contract@v1+099030d1",
+  "schema": "v1",
+  "schema_fingerprint": "e6f28d611919",
+  "model": "stub-regex-v1",
+  "provider": "stub",
+  "document_count": 36,
+  "first_try_pass_rate": 0.833,
+  "mean_attempts": 1.17,
+  "invalid_count": 0,
+  "grounding_ratio": 0.0,
+  "grounding_drop": true,
+  "input_tokens_p50": 729,
+  "cost_per_doc_usd": "0.008045",
+  "prefix_signature": "01cc8a5b15d0a76a",
+  "pricing_model": "claude-opus-5",
+  "field_accuracy": {
+    "start_date": 0.0,
+    "termination_notice_days": 0.0,
+    "jurisdiction": 0.0,
+    "end_date": 0.028,
+    "amount_minor": 0.028,
+    "auto_renewal": 0.972,
+    "risk_rationale": 0.972,
+    "parties": 1.0,
+    "currency": 1.0,
+    "risk_level": 1.0
+  },
+  "weakest_field": "start_date",
+  "edge_case_failures": {
+    "open_ended_term": [
+      "start_date",
+      "amount_minor",
+      "termination_notice_days",
+      "jurisdiction"
+    ],
+    "notice_in_months": [
+      "start_date",
+      "end_date",
+      "amount_minor",
+      "termination_notice_days",
+      "jurisdiction"
+    ],
+    "fractional_amount": [
+      "start_date",
+      "end_date",
+      "amount_minor",
+      "termination_notice_days",
+      "jurisdiction"
+    ],
+    "auto_renewal": [
+      "start_date",
+      "end_date",
+      "amount_minor",
+      "termination_notice_days",
+      "auto_renewal",
+      "jurisdiction"
+    ],
+    "high_risk": [
+      "start_date",
+      "end_date",
+      "amount_minor",
+      "termination_notice_days",
+      "jurisdiction",
+      "risk_rationale"
+    ],
+    "injection": [
+      "start_date",
+      "end_date",
+      "amount_minor",
+      "termination_notice_days",
+      "jurisdiction"
+    ],
+    "foreign_currency": [
+      "start_date",
+      "end_date",
+      "amount_minor",
+      "termination_notice_days",
+      "jurisdiction"
+    ],
+    "no_amount": [
+      "start_date",
+      "end_date",
+      "termination_notice_days",
+      "jurisdiction"
+    ],
+    "effective_vs_signed": [
+      "start_date",
+      "end_date",
+      "amount_minor",
+      "termination_notice_days",
+      "jurisdiction"
+    ],
+    "tax_inclusive": [
+      "start_date",
+      "end_date",
+      "amount_minor",
+      "termination_notice_days",
+      "jurisdiction"
+    ]
+  }
+}

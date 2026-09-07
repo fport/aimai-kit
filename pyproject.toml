@@ -1,7 +1,7 @@
 [project]
 name = "aimai-kit"
-version = "0.1.0"
-description = "A framework-free LLM engineering toolkit: provider adapters with measurement, retry and fallback"
+version = "0.2.0"
+description = "A framework-free LLM engineering toolkit: provider adapters, prompt and context engineering, structured outputs"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
@@ -11,6 +11,9 @@ keywords = [
     "anthropic",
     "openai",
     "gemini",
+    "prompt-engineering",
+    "structured-outputs",
+    "context-engineering",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -25,6 +28,7 @@ dependencies = [
     "pydantic>=2.9",
     "tiktoken>=0.14",
     "python-dotenv>=1.0",
+    "jinja2>=3.1",
 ]
 
 [project.optional-dependencies]
@@ -43,6 +47,7 @@ dev = [
 
 [project.scripts]
 model-probe = "aimai_kit.provider.cli.probe:main"
+prompt-lab = "aimai_kit.prompts.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/fport/aimai-kit"

@@ -1,0 +1,77 @@
+{
+  "ran_at": "2026-09-07T11:06:25.167632+00:00",
+  "prompt_ref": "extract_contract@v1+099030d1",
+  "schema": "v1",
+  "schema_fingerprint": "e6f28d611919",
+  "model": "stub-regex-v1",
+  "provider": "stub",
+  "document_count": 36,
+  "first_try_pass_rate": 0.833,
+  "mean_attempts": 1.17,
+  "invalid_count": 0,
+  "grounding_ratio": 0.0,
+  "grounding_drop": false,
+  "input_tokens_p50": 729,
+  "cost_per_doc_usd": "0.008045",
+  "prefix_signature": "01cc8a5b15d0a76a",
+  "pricing_model": "claude-opus-5",
+  "field_accuracy": {
+    "jurisdiction": 0.0,
+    "amount_minor": 0.028,
+    "start_date": 0.889,
+    "end_date": 0.889,
+    "termination_notice_days": 0.972,
+    "auto_renewal": 0.972,
+    "risk_rationale": 0.972,
+    "parties": 1.0,
+    "currency": 1.0,
+    "risk_level": 1.0
+  },
+  "weakest_field": "jurisdiction",
+  "edge_case_failures": {
+    "open_ended_term": [
+      "amount_minor",
+      "jurisdiction"
+    ],
+    "notice_in_months": [
+      "amount_minor",
+      "termination_notice_days",
+      "jurisdiction"
+    ],
+    "fractional_amount": [
+      "amount_minor",
+      "jurisdiction"
+    ],
+    "auto_renewal": [
+      "amount_minor",
+      "auto_renewal",
+      "jurisdiction"
+    ],
+    "high_risk": [
+      "amount_minor",
+      "jurisdiction",
+      "risk_rationale"
+    ],
+    "injection": [
+      "amount_minor",
+      "jurisdiction"
+    ],
+    "foreign_currency": [
+      "amount_minor",
+      "jurisdiction"
+    ],
+    "no_amount": [
+      "jurisdiction"
+    ],
+    "effective_vs_signed": [
+      "start_date",
+      "end_date",
+      "amount_minor",
+      "jurisdiction"
+    ],
+    "tax_inclusive": [
+      "amount_minor",
+      "jurisdiction"
+    ]
+  }
+}
