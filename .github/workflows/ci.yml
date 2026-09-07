@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# The default token needs nothing beyond reading the checkout.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install the project
+        run: uv sync --all-extras --group dev --python ${{ matrix.python-version }}
+
+      - name: Lint
+        run: uv run ruff check src/ tests/ scripts/
+
+      - name: Format check
+        run: uv run ruff format --check src/ tests/ scripts/
+
+      # Live tests are excluded by the pytest config; nothing here needs an
+      # API key, which is the point of the stub clients.
+      - name: Test
+        run: uv run pytest
+
+      - name: Verify the package builds
+        run: uv build
+
+  reproduce-measurements:
+    # The numbers in docs/measurements.md come from these scripts. Running
+    # them in CI means a change that quietly invalidates a published table
+    # fails here rather than being noticed by a reader.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - run: uv sync --all-extras --group dev
+
+      - name: Regenerate the golden set
+        run: uv run python scripts/generate_golden_set.py
+
+      - name: Extraction eval, with the CI gate on the weakest field
+        run: |
+          uv run prompt-lab eval \
+            --prompt extract_contract@v2 --schema v2 \
+            --pricing config/pricing.toml --pricing-model claude-opus-5 \
+            --min-field-accuracy 0.90
+
+      - name: Tool description experiment
+        run: uv run python scripts/tool_description_experiment.py
+
+      - name: Loop detection experiment
+        run: uv run python scripts/agent_loop_experiment.py
+
+      - name: Harness configuration experiment
+        run: uv run python scripts/harness_experiment.py
+
+      - name: Fail if a committed result changed
+        run: |
+          if ! git diff --quiet -- evals/; then
+            echo "A measurement changed but the committed result was not updated:"
+            git diff --stat -- evals/
+            exit 1
+          fi

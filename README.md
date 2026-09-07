@@ -1,5 +1,10 @@
 # aimai-kit
 
+[![CI](https://github.com/fport/aimai-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/fport/aimai-kit/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/aimai-kit.svg)](https://pypi.org/project/aimai-kit/)
+[![Python](https://img.shields.io/pypi/pyversions/aimai-kit.svg)](https://pypi.org/project/aimai-kit/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A framework-free LLM engineering toolkit in one Python package: provider
 adapters, prompt and context engineering, structured outputs, a tool layer,
 a bounded agent loop, and a harness for long-running work.
@@ -154,6 +159,11 @@ anthropic:claude-opus-5` for numbers about a model.
 ---
 
 ## Testing
+
+CI runs the suite on Python 3.12 and 3.13, and a second job re-runs every
+measurement script and fails if a committed result changed. A table in the
+docs that no longer matches the code is a broken build, not a reader's
+problem.
 
 ```bash
 uv run pytest                 # 343 tests
