@@ -328,3 +328,15 @@ başarısızlık biçimi, ama "compaction işe yaramıyor"dan farklı bir iddia.
 Ders üçüncü satırda. Okumayı devretmek token'ı %88 düşürdü ve cevabı korudu,
 çünkü ana context belgeleri zaten hiç tutmadı. **En ucuz context yönetimi, hiç
 üstlenmediğin context'i yönetmemektir.**
+
+---
+
+## Checklist
+
+Bu katman proda çıkmadan önce:
+
+--8<-- "harness.tr.md"
+
+
+Gerisi — tool'lar, budget'lar, çıkışın kendisi — ve PR template'ine yapıştırılacak
+hâli: **[proda çıkmadan checklist](checklist.md)**.

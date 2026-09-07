@@ -300,3 +300,15 @@ olasılığını aynı bıraktı ve yıkıcı olana uzanma olasılığını öl�
 
 Bu, panoya hangi metriğin konacağı hakkında bir şey söylüyor. Seçim doğruluğu
 bir kalite sinyali; yasak tool oranı bir güvenlik sinyali — ve önce o bozuldu.
+
+---
+
+## Checklist
+
+Bu katman proda çıkmadan önce:
+
+--8<-- "tools.tr.md"
+
+
+Gerisi — tool'lar, budget'lar, çıkışın kendisi — ve PR template'ine yapıştırılacak
+hâli: **[proda çıkmadan checklist](checklist.md)**.

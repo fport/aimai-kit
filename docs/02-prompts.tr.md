@@ -314,3 +314,21 @@ uv run prompt-lab eval --prompt extract_contract@v1 --schema v1 \
 İki sayı da doğru ve farklı sorulara cevap veriyor. `--no-grounding-drop`
 bayrağı ikisini ayırmak için var, ve ders genelleşiyor: **bir metrik
 düştüğünde, hangi katmanın düşürdüğünü sorabilecek bir yol olmalı.**
+
+---
+
+## Checklist
+
+Bu katman proda çıkmadan önce:
+
+Bir prompt yazarken:
+
+--8<-- "prompt.tr.md"
+
+Structured output isterken:
+
+--8<-- "structured.tr.md"
+
+
+Gerisi — tool'lar, budget'lar, çıkışın kendisi — ve PR template'ine yapıştırılacak
+hâli: **[proda çıkmadan checklist](checklist.md)**.

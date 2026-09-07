@@ -253,3 +253,15 @@ approved = CallContext(approved_calls=frozenset({thread.pending_approval}))
 run = agent.run(thread, ctx=approved)
 assert run.stop_reason is StopReason.FINISHED
 ```
+
+---
+
+## Checklist
+
+Before this layer goes to production:
+
+--8<-- "agent.md"
+
+
+The rest — tools, budgets, the release itself — and a copy-paste version for a PR
+template: **[production checklist](checklist.md)**.

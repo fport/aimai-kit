@@ -322,3 +322,15 @@ degraded first.
 The selector is a stub, so the absolute numbers are not a claim about any
 provider. What transfers is that the experiment costs nothing and can run on
 every description change.
+
+---
+
+## Checklist
+
+Before this layer goes to production:
+
+--8<-- "tools.md"
+
+
+The rest — tools, budgets, the release itself — and a copy-paste version for a PR
+template: **[production checklist](checklist.md)**.

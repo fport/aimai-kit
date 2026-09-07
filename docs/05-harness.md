@@ -335,3 +335,15 @@ The third row is the one with the lesson. Delegating the reading cut tokens by
 88% and kept the answer, because the main context never held the documents in
 the first place. The cheapest context management is not managing context you
 never took on.
+
+---
+
+## Checklist
+
+Before this layer goes to production:
+
+--8<-- "harness.md"
+
+
+The rest — tools, budgets, the release itself — and a copy-paste version for a PR
+template: **[production checklist](checklist.md)**.

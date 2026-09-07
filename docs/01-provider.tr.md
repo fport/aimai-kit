@@ -245,3 +245,15 @@ def test_vendor_sdk_does_not_leak_outside_adapters(path: Path) -> None:
     roots = _import_roots(ast.parse(path.read_text(encoding="utf-8")))
     assert not roots & FORBIDDEN_ROOTS
 ```
+
+---
+
+## Checklist
+
+Bu katman proda çıkmadan önce:
+
+--8<-- "provider.tr.md"
+
+
+Gerisi — tool'lar, budget'lar, çıkışın kendisi — ve PR template'ine yapıştırılacak
+hâli: **[proda çıkmadan checklist](checklist.md)**.

@@ -325,3 +325,21 @@ Both numbers are true and they answer different questions. The
 `--no-grounding-drop` flag exists to separate them, and the lesson
 generalizes: **when a metric drops, there must be a way to ask which layer
 dropped it.**
+
+---
+
+## Checklist
+
+Before this layer goes to production:
+
+Writing a prompt:
+
+--8<-- "prompt.md"
+
+Asking for structured output:
+
+--8<-- "structured.md"
+
+
+The rest — tools, budgets, the release itself — and a copy-paste version for a PR
+template: **[production checklist](checklist.md)**.

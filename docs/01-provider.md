@@ -230,3 +230,15 @@ def test_vendor_sdk_does_not_leak_outside_adapters(path: Path) -> None:
     roots = _import_roots(ast.parse(path.read_text(encoding="utf-8")))
     assert not roots & FORBIDDEN_ROOTS
 ```
+
+---
+
+## Checklist
+
+Before this layer goes to production:
+
+--8<-- "provider.md"
+
+
+The rest — tools, budgets, the release itself — and a copy-paste version for a PR
+template: **[production checklist](checklist.md)**.

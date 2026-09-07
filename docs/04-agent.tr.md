@@ -243,3 +243,15 @@ oynatan bir koşu ikinci kez ücret çekmiyor.
 Kapatmadığı pencere: süreç, tool çalıştıktan sonra ve checkpoint yazılmadan
 önce ölebilir. Bunu ancak idempotent bir tool kapatır. **Sınırı yazılmamış
 bir garanti, garantisizlikten kötüdür**, çünkü birisi ona güvenecektir.
+
+---
+
+## Checklist
+
+Bu katman proda çıkmadan önce:
+
+--8<-- "agent.tr.md"
+
+
+Gerisi — tool'lar, budget'lar, çıkışın kendisi — ve PR template'ine yapıştırılacak
+hâli: **[proda çıkmadan checklist](checklist.md)**.
