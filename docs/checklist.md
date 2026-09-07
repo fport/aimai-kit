@@ -46,6 +46,11 @@ that block.
 
 → [4. The agent loop](04-agent.md)
 
+!!! warning "This loop is a study, not a runtime"
+
+    Use [Strands Agents](https://strandsagents.com/) in production. The list below
+    still applies — it is what any framework has to get right on your behalf.
+
 --8<-- "agent.md"
 
 ## When the run gets long

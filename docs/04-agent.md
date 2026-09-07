@@ -1,5 +1,20 @@
 # 4. Agent loop
 
+!!! warning "Do not run this loop in production"
+
+    This layer is a study. It exists to show what an agent loop actually has to
+    handle and to put a number on each decision, and it is deliberately small enough
+    to read in an afternoon. It has not been hardened, it carries one person's
+    traffic, and nobody is on call for it.
+
+    For production use [**Strands Agents**](https://strandsagents.com/) — an
+    open-source, model-agnostic agent SDK that is maintained, and that builds these
+    same ideas out properly.
+
+    The chapter is still worth reading first. Whichever framework you pick will make
+    every decision below on your behalf; knowing which decisions they are is what
+    lets you read its configuration and recognise what its defaults cost you.
+
 The loop is short, and that is the design. Everything it could have absorbed
 lives behind its own seam:
 

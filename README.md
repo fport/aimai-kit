@@ -138,6 +138,8 @@ model cannot claim to be another tenant.
 final tool-free turn so a stopped run still answers. Every tool call gets a
 result, including refused ones. Repetition is warned about before it is
 stopped, because a warned model usually recovers.
+*This layer is a study, not a runtime — for production use
+[Strands Agents](https://strandsagents.com/).*
 
 **[Harness](https://fport.github.io/aimai-kit/05-harness/)** — the atomic unit of context is a segment,
 not a message, so trimming can never separate a tool call from its result.

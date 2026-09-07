@@ -46,6 +46,11 @@ incident'ta ortaya çıkan cinsten.
 
 → [4. Ajan döngüsü](04-agent.md)
 
+!!! warning "Bu döngü bir çalışma, bir runtime değil"
+
+    Prod için [Strands Agents](https://strandsagents.com/) kullanın. Aşağıdaki liste
+    yine de geçerli — herhangi bir framework'ün senin adına doğru yapması gereken şey.
+
 --8<-- "agent.tr.md"
 
 ## İş uzadığında

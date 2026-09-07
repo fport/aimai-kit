@@ -1,5 +1,21 @@
 # 4. Ajan döngüsü
 
+!!! warning "Bu döngüyü proda koymayın"
+
+    Bu katman bir çalışma. Bir agent döngüsünün gerçekte neleri karşılamak zorunda
+    olduğunu göstermek ve her kararın altına bir sayı koymak için var; bilerek bir
+    öğleden sonrada okunacak kadar küçük tutuldu. Sertleştirilmedi, arkasında tek
+    kişinin trafiği var ve kimse nöbette değil.
+
+    Prod için [**Strands Agents**](https://strandsagents.com/) kullanın — bakımı
+    yapılan, modelden bağımsız, açık kaynak bir agent SDK'sı; aynı fikirleri düzgün
+    biçimde inşa etmiş.
+
+    Bölümü yine de önce okumaya değer. Hangi framework'ü seçersen seç, aşağıdaki her
+    kararı senin adına verecek; hangi kararlar olduğunu bilmek, o framework'ün
+    konfigürasyonunu okumanı ve varsayılanlarının sana neye mal olduğunu görmeni
+    sağlayan şey.
+
 Döngü kısa, ve tasarım bu. Soğurabileceği her şey kendi sınırının arkasında
 duruyor:
 
