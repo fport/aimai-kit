@@ -1,7 +1,14 @@
-# Harness — why it looks like this
+# 5. Harness
 
 The agent loop bounds a run. This layer makes a *long* run survivable, and
 every piece of it exists because of a specific way long runs fail.
+
+!!! done "What we built here"
+
+    The segment model and a `ContextManager`, spill and a scratchpad for large
+    tool output, threshold-triggered compaction with a versioned prompt, a
+    SQLite memory store with a deterministic write gate, a schema-constrained
+    sub-agent, and the two layers of isolation that can be written as code.
 
 ## The atomic unit of context is a segment
 
@@ -15,6 +22,18 @@ So the unit that gets trimmed is a **segment**: one or more messages that live
 or die together. Everything downstream — fill ratio, trim order, compaction —
 operates on segments, and the pairing invariant is then free rather than
 something each of them has to remember separately.
+
+```python
+from aimai_kit.harness import segments_from_messages
+
+segments = segments_from_messages(thread.messages)
+for s in segments:
+    print(s.kind.value, len(s.messages), "droppable" if s.droppable else "FIXED")
+# task 1 FIXED
+# tool_turn 2 droppable      <- assistant turn + tool result, together
+# tool_turn 2 droppable
+# assistant 1 droppable
+```
 
 The prefix (system blocks, the original task) is marked non-droppable, which
 is what makes "trim from the end" a safe rule rather than a hopeful one.
@@ -34,6 +53,19 @@ So the oldest droppable segments go first, the prefix stays, and the most
 recent turn stays. Without the last one the model has no idea what it was just
 doing.
 
+```python
+from aimai_kit.harness import ContextManager
+
+manager = ContextManager(window=200_000, output_reserve=4_000)
+messages, stats = manager.build(thread.messages, step=thread.step)
+
+print(stats.as_dict())
+# {'step': 12, 'input_tokens': 148204, 'fill_ratio': 0.756,
+#  'segments': 22, 'dropped_segments': 3, 'compacted': False}
+
+print(manager.fill_percentile(95))   # 0.81
+```
+
 The fill ratio is recorded **every step**, not only when something goes wrong.
 A run sitting at 0.92 for thirty steps has not failed; it is one long tool
 result away from failing, and the only way to know that in advance is to have
@@ -49,6 +81,25 @@ underlying problem — the information is gone, and an agent that needed line
 Spilling keeps both properties. The full output goes to disk, the context gets
 a short summary plus a `spill://` reference, and a tool lets the agent read
 any line range of the original.
+
+```python
+from aimai_kit.harness import SpillStore, build_spill_tools
+
+store = SpillStore(Path("runs/abc123"), threshold_chars=4_000)
+summary = store.spill("find_orders", huge_output)
+print(summary)
+# [find_orders returned 25089 characters over 900 lines; the full output is
+#  stored at spill://7e721695fa0a]
+#
+# First 600 characters:
+# ...
+#
+# [use read_spill with ref=spill://7e721695fa0a and a line range to read any
+#  part of the full output]
+
+registry = ToolRegistry(build_spill_tools(store))
+registry.names()   # ['read_notes', 'read_spill', 'write_note']
+```
 
 The summary is what makes this work. A bare reference forces the agent to read
 the file just to decide whether reading it is worth it, which spends the
@@ -73,6 +124,18 @@ Three decisions shape it:
 call to save tokens that were not scarce yet. The trigger is a fill ratio
 *and* a minimum amount of history; compacting a short conversation spends a
 call to summarize four turns into three.
+
+```python
+from aimai_kit.harness import Compactor
+
+compactor = Compactor(client, registry, prompt_key="compaction@v2",
+                      trigger_ratio=0.75, keep_recent=4)
+
+if compactor.should_compact(stats.fill_ratio, segments):
+    result = compactor.compact(segments)
+    print(result.compacted_count, result.saved_tokens)
+    # 14 41203
+```
 
 **Triggered at a step boundary.** A compaction in the middle of a tool turn
 would separate a call from its result — the exact thing the segment model
@@ -120,10 +183,35 @@ model "should this be remembered?" produces a store that fills with the
 model's own speculation, and speculation that has been written down reads
 exactly like a fact on the way back out.
 
-Rules decide instead. Refused: anything matching credential or personal-
-identifier patterns; anything phrased as transient ("right now", "currently");
-anything phrased as inference ("probably", "seems like"); anything too short
-to be useful on recall.
+Rules decide instead:
+
+```python
+from aimai_kit.harness import MemoryStore, MemoryKind, WriteRefused
+
+store = MemoryStore("memory.sqlite3")
+store.write(MemoryKind.SEMANTIC,
+            "Customer c-100 is on the enterprise tier.", source="crm")
+
+for bad in [
+    "Card 4111111111111111 is on file",
+    "Contact is buyer@example.com",
+    "The customer is probably unhappy",
+    "The account is suspended right now",
+]:
+    try:
+        store.write(MemoryKind.EPISODIC, bad, source="chat")
+    except WriteRefused as e:
+        print(e)
+# not stored: looks like a credential or personal identifier
+# not stored: looks like a credential or personal identifier
+# not stored: reads as speculation rather than an observed fact
+# not stored: phrased as something that is only true right now
+```
+
+Refused: anything matching credential or personal-identifier patterns;
+anything phrased as transient ("right now", "currently"); anything phrased as
+inference ("probably", "seems like"); anything too short to be useful on
+recall.
 
 The sensitive-pattern list is short and blunt on purpose. A gate that tries to
 be clever about what counts as sensitive ends up with exceptions, and
@@ -134,6 +222,15 @@ is on the trial plan" is true for thirty days and misleading afterwards.
 Recall filters on it and the stale rate is published as a counter, so the
 store's decay is visible rather than something users discover.
 
+```python
+store.write(MemoryKind.SEMANTIC, "Customer c-101 is on a trial plan.",
+            source="crm", valid_until=date.today() - timedelta(days=1))
+
+store.recall()                      # the stale record is filtered out
+store.recall(include_stale=True)    # unless you ask for it
+store.stale_ratio()                 # 0.25
+```
+
 ## Sub-agents: delegate the reading
 
 A task requiring thirty documents fills the main window with material needed
@@ -142,6 +239,18 @@ once. By document twenty the agent is compacting away its own findings.
 A sub-agent runs the reading in its own thread with its own window and returns
 a **schema-constrained** report. The main agent receives a summary and
 citations, not the documents.
+
+```python
+from aimai_kit.harness import Subagent
+
+sub = Subagent(client, executor, allowlist=["read_source"])
+result = sub.run("Which order is affected?")
+
+print(result.report.summary)      # "The affected order is ORD-88421."
+print(result.report.evidence)     # ['ORD-88421']
+print(result.report.confident)    # True
+print(result.compression_ratio)   # 18.4  <- spent inside / returned outside
+```
 
 Constrained rather than free text for the same reason extraction is: a
 sub-agent answering in prose gives the caller something to interpret rather
@@ -177,6 +286,19 @@ important decision in it. Layers 1 and 2 stop mistakes; a process with no
 route out cannot exfiltrate anything even when they are defeated, because
 there is nowhere to send it. Every other control degrades gracefully. Network
 access does not — it is on or off.
+
+```python
+from aimai_kit.harness import Sandbox, SandboxViolation
+
+sandbox = Sandbox(root=Path("runs/abc123/workspace"))
+
+sandbox.run("cat notes.txt")           # fine
+sandbox.run("curl https://evil.example")
+# SandboxViolation: 'curl' is not on the allowlist (cat, grep, head, ls, tail, wc)
+
+sandbox.resolve("../../etc/passwd")
+# SandboxViolation: path '../../etc/passwd' resolves outside the sandbox root
+```
 
 Two details in the code are worth knowing. Paths are resolved **before** the
 containment check, because `../../etc` passes a string comparison and then

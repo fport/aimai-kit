@@ -1,0 +1,133 @@
+/* Neon-on-black, matching the mark.
+ *
+ * Material's built-in palettes have no colour close enough to the logo green,
+ * so the accent is overridden directly rather than approximated with "lime".
+ */
+
+:root {
+  --aimai-green: #8FE64A;
+  --aimai-green-dim: #5FA82F;
+  --aimai-ink: #0D0D0D;
+}
+
+/* --- dark scheme: the primary look ------------------------------------ */
+
+[data-md-color-scheme="slate"] {
+  --md-hue: 210;
+  --md-default-bg-color: #0D0D0D;
+  --md-default-bg-color--light: #141414;
+  --md-default-fg-color: #E8E8E8;
+  --md-default-fg-color--light: #C6C6C6;
+  --md-default-fg-color--lighter: #8A8A8A;
+
+  --md-primary-fg-color: #0D0D0D;
+  --md-primary-bg-color: #E8E8E8;
+
+  --md-accent-fg-color: var(--aimai-green);
+  --md-typeset-a-color: var(--aimai-green);
+
+  --md-code-bg-color: #141414;
+  --md-code-fg-color: #D8D8D8;
+  --md-code-hl-keyword-color: var(--aimai-green);
+  --md-code-hl-function-color: #A8E86A;
+  --md-code-hl-string-color: #C8C8C8;
+  --md-code-hl-comment-color: #6B7280;
+  --md-code-hl-number-color: #E6B04A;
+}
+
+[data-md-color-scheme="slate"] .md-header,
+[data-md-color-scheme="slate"] .md-tabs {
+  background-color: #0A0A0A;
+  border-bottom: 1px solid #232323;
+}
+
+[data-md-color-scheme="slate"] .md-typeset h1,
+[data-md-color-scheme="slate"] .md-typeset h2 {
+  color: #F2F2F2;
+}
+
+/* The section marker that makes the layer pages feel like chapters. */
+[data-md-color-scheme="slate"] .md-typeset h2 {
+  border-left: 3px solid var(--aimai-green);
+  padding-left: 0.6rem;
+  margin-left: -0.75rem;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background-color: #171717;
+  color: var(--aimai-green);
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) td {
+  border-top-color: #232323;
+}
+
+[data-md-color-scheme="slate"] .md-nav__link--active,
+[data-md-color-scheme="slate"] .md-nav__link:focus,
+[data-md-color-scheme="slate"] .md-nav__link:hover {
+  color: var(--aimai-green);
+}
+
+/* --- light scheme: same accent, readable ------------------------------ */
+
+[data-md-color-scheme="default"] {
+  --md-accent-fg-color: var(--aimai-green-dim);
+  --md-typeset-a-color: var(--aimai-green-dim);
+}
+
+[data-md-color-scheme="default"] .md-typeset h2 {
+  border-left: 3px solid var(--aimai-green-dim);
+  padding-left: 0.6rem;
+  margin-left: -0.75rem;
+}
+
+/* --- shared ----------------------------------------------------------- */
+
+.md-typeset code {
+  border-radius: 3px;
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+  border-left-width: 3px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+}
+
+/* A "what we did here" callout, used once per layer page. */
+.md-typeset .admonition.done,
+.md-typeset details.done {
+  border-color: var(--aimai-green);
+}
+
+.md-typeset .done > .admonition-title,
+.md-typeset .done > summary {
+  background-color: rgba(143, 230, 74, 0.12);
+}
+
+.md-typeset .done > .admonition-title::before,
+.md-typeset .done > summary::before {
+  background-color: var(--aimai-green);
+  -webkit-mask-image: var(--md-admonition-icon--success);
+  mask-image: var(--md-admonition-icon--success);
+}
+
+/* Hero banner on the landing pages. */
+.aimai-hero {
+  text-align: center;
+  margin: 0 0 2.5rem;
+}
+
+.aimai-hero img {
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.aimai-badges {
+  text-align: center;
+  margin: -1.5rem 0 2rem;
+}
+
+.aimai-badges img {
+  margin: 0 0.15rem;
+}

@@ -1,4 +1,4 @@
-# Tool layer — why it looks like this
+# 3. Tools
 
 Three responsibilities, three files, and keeping them apart is the main
 design decision:
@@ -13,6 +13,13 @@ Collapsing these into one class is the usual shortcut, and it is why tool
 authorization so often ends up inside the agent loop — where it cannot be
 tested without starting a run.
 
+!!! done "What we built here"
+
+    The `@tool` decorator (JSON Schema from a signature), a `ToolRegistry`
+    with an allowlist, exports for three providers, a `ToolExecutor` with five
+    gates, idempotency signatures, a realistic five-tool example, and a golden
+    set that measures selection accuracy.
+
 ## The schema comes from the signature
 
 Writing the function and its JSON Schema separately guarantees they drift.
@@ -22,6 +29,45 @@ just receives defaults.
 
 `@tool` derives the schema from `inspect.signature`, so that class of bug is
 structurally impossible.
+
+```python
+from datetime import date
+from typing import Annotated, Literal
+from pydantic import Field
+from aimai_kit.tools import tool
+
+@tool
+def find_orders(
+    customer_id: Annotated[str, Field(description="Customer id, e.g. c-100.")],
+    status: Literal["open", "shipped", "cancelled", "any"] = "any",
+    since: date | None = None,
+    limit: int = 20,
+) -> list[dict]:
+    """List a customer's orders, most recent first.
+
+    Use this when you need a LIST of orders. To fetch ONE order whose id you
+    already know, use get_order instead.
+
+    Read-only.
+    """
+    ...
+```
+
+The schema it produces:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "customer_id": {"type": "string", "description": "Customer id, e.g. c-100."},
+    "status": {"type": "string", "enum": ["open", "shipped", "cancelled", "any"]},
+    "since": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+    "limit": {"type": "integer"}
+  },
+  "required": ["customer_id", "status", "since", "limit"],
+  "additionalProperties": false
+}
+```
 
 Supported types are restricted to `str`, `int`, `float`, `bool`, `date`,
 `Literal` and lists of those. An unsupported annotation raises at import time
@@ -48,6 +94,17 @@ arguments to it. Putting them in the schema would let the model set
 
 The operator sets them in the registry; the executor reads them from there.
 
+```python
+@tool(side_effect=True, requires_approval=True)
+def cancel_order(ctx: CallContext, order_id: str, reason: str) -> dict:
+    """Cancel an order. THIS CHANGES DATA and requires human approval."""
+    ...
+
+spec = cancel_order.tool_spec
+assert spec.requires_approval is True
+assert "requires_approval" not in spec.parameters["properties"]   # not in the schema
+```
+
 ## The allowlist filters the declaration
 
 `registry.visible(allowlist)` filters what is *advertised*, not just what is
@@ -57,6 +114,12 @@ If a tool the caller may not use is still declared to the model, the model
 will eventually call it, the executor will refuse, and a step is burned on a
 refusal that was avoidable. Worse, the refusal message teaches the model that
 the tool exists.
+
+```python
+registry.names()                 # ['build_report', 'cancel_order', 'find_orders', ...]
+[t.name for t in registry.visible(["find_orders", "get_order"])]
+# ['find_orders', 'get_order']   — the model never sees the others
+```
 
 This is also the answer to "what happens with twenty tools": you do not send
 twenty. You send the subset this request is allowed to use.
@@ -74,6 +137,17 @@ The providers disagree about two things and nothing else:
 | OpenAI Responses | flat | `parameters` |
 | OpenAI Chat | nested under `function` | `parameters` |
 | Anthropic | flat | `input_schema` |
+
+```python
+from aimai_kit.tools import export_for
+
+export_for("openai", registry.visible())[0]
+# {'type': 'function', 'name': 'find_orders', 'description': '...',
+#  'parameters': {...}}
+
+export_for("anthropic", registry.visible())[0]
+# {'name': 'find_orders', 'description': '...', 'input_schema': {...}}
+```
 
 That is exactly the kind of difference which, left unabstracted, gets copied
 into every call site. One internal representation, three thin exporters, and
@@ -93,6 +167,26 @@ act on, never a stack trace:
 | Matches the schema? | `bad_args` | yes | names the offending field |
 | Needs approval? | `needs_approval` | no | stops the loop cleanly |
 
+```python
+from aimai_kit.tools import CallContext, ToolExecutor
+
+executor = ToolExecutor(registry)
+ctx = CallContext(user_id="u-1", tenant_id="t-1")
+
+executor.call("get_ordr", "{}", ctx).content
+# "There is no tool named 'get_ordr'. Available tools: build_report,
+#  cancel_order, find_orders, get_customer, get_order. Pick one of those or
+#  answer without a tool."
+
+executor.call("cancel_order", '{"order_id":"1"}', ctx, allowlist=["get_order"]).content
+# "You are not permitted to use that tool in this context. Continue with the
+#  tools you have been given."          <- does not name 'cancel_order'
+
+executor.call("get_order", '{"wrong": 1}', ctx).content
+# "The arguments for 'get_order' do not match its schema. order_id: Field
+#  required. Fix those fields and call the tool again."
+```
+
 The asymmetry between gates 1 and 2 is deliberate. Gate 1 lists the available
 tools, because a model that called `get_customer` when the tool is
 `fetch_customer` corrects itself on the next turn. Gate 2 does not, because
@@ -106,7 +200,18 @@ nothing, and the loop should stop rather than burn steps.
 ## After the gates
 
 **Server context is injected from the call.** `user_id` and `tenant_id` come
-from the session and are stripped from the schema. Tenancy as a model-supplied
+from the session and are stripped from the schema.
+
+```python
+@tool
+def get_order(ctx: CallContext, order_id: str) -> dict:
+    """Fetch a single order by its id."""
+    # ctx.tenant_id goes into the query; the model cannot see or send it
+    ...
+
+# Even if the model tries, the schema rejects the extra field.
+executor.call("get_order", '{"order_id":"1", "tenant_id":"t-evil"}', ctx)
+``` Tenancy as a model-supplied
 field means the model can claim to be another tenant, and no amount of
 prompting fixes that. A test asserts the parameters are absent from the
 schema.
@@ -128,6 +233,13 @@ reason. The result is cut to `max_result_chars` and the cut is stated in the
 content, because an answer built on half a document with no indication
 anything was missing is worse than a short answer.
 
+```pycon
+>>> result = executor.call("build_report", "{}", ctx)
+>>> print(result.content[-120:])
+...[truncated: 194201 more characters were omitted. Narrow the query or
+ request a specific section.]
+```
+
 **`raw` never enters the context.** It goes to the trace, so debugging can see
 the full payload while the model only ever sees `content`.
 
@@ -143,10 +255,28 @@ a known order.
 
 A failure in one call never loses the others: every call gets its own result.
 
+```python
+results = executor.call_many([
+    ("get_order", '{"order_id": "1"}'),
+    ("get_order", "{broken"),
+    ("get_order", '{"order_id": "3"}'),
+], ctx)
+
+[r.ok for r in results]          # [True, False, True]
+[r.error_code for r in results]  # [None, 'bad_json', None]
+```
+
 ## Idempotency without asking the model
 
 The call signature is the tool name plus normalized arguments, so
 `{"a":1,"b":2}` and `{"b":2,"a":1}` are recognized as the same call.
+
+```python
+from aimai_kit.tools.idempotency import call_signature
+
+call_signature("charge", {"a": 1, "b": 2}) == call_signature("charge", {"b": 2, "a": 1})
+# True
+```
 
 The key is never requested from the model. Asking for an idempotency key means
 the guarantee holds exactly as often as the model remembers to send a stable

@@ -14,3 +14,6 @@ evals/**/local-*.json
 
 # Local artifacts from the example tools and experiments
 .aimai-*.sqlite3
+
+# MkDocs build output
+site/

@@ -1,0 +1,111 @@
+site_name: aimai-kit
+site_description: A framework-free LLM engineering toolkit — five layers, measured
+site_url: https://fport.github.io/aimai-kit/
+repo_url: https://github.com/fport/aimai-kit
+repo_name: fport/aimai-kit
+edit_uri: edit/main/docs/
+copyright: MIT licensed
+
+theme:
+  name: material
+  language: en
+  logo: assets/icon.png
+  favicon: assets/icon.png
+  font:
+    text: Inter
+    code: JetBrains Mono
+  palette:
+    # Dark first: the mark is neon on black, and the site should look like it.
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: lime
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: lime
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+  features:
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+    - search.highlight
+    - search.suggest
+
+extra_css:
+  - stylesheets/neon.css
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: tr
+          name: Türkçe
+          build: true
+          nav_translations:
+            Start here: Buradan başla
+            Overview: Genel bakış
+            Layers: Katmanlar
+            1. Provider: 1. Sağlayıcı
+            2. Prompts and context: 2. Prompt ve context
+            3. Tools: 3. Araçlar
+            4. Agent loop: 4. Ajan döngüsü
+            5. Harness: 5. Harness
+            Measurements: Ölçümler
+
+nav:
+  - Start here:
+      - Overview: index.md
+  - Layers:
+      - 1. Provider: 01-provider.md
+      - 2. Prompts and context: 02-prompts.md
+      - 3. Tools: 03-tools.md
+      - 4. Agent loop: 04-agent.md
+      - 5. Harness: 05-harness.md
+  - Measurements: measurements.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/fport/aimai-kit
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/aimai-kit/

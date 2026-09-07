@@ -15,6 +15,11 @@ a bounded agent loop, and a harness for long-running work.
 
 Five layers, each built on the one below it, each with its own measurements.
 
+**Documentation: [fport.github.io/aimai-kit](https://fport.github.io/aimai-kit/)**
+— the reasoning behind every layer, with examples. Available in
+[English](https://fport.github.io/aimai-kit/) and
+[Türkçe](https://fport.github.io/aimai-kit/tr/).
+
 | Layer | Package | What it adds |
 |---|---|---|
 | 1 | `provider/` | Token/cost/latency measurement, four adapters, retry and fallback |
@@ -111,30 +116,30 @@ uv run prompt-lab --model anthropic:claude-opus-5 eval
 Short version below; the full reasoning, including what was rejected and why,
 is in `docs/`.
 
-**[Provider](docs/01-provider.md)** — one internal message format and five
+**[Provider](https://fport.github.io/aimai-kit/01-provider/)** — one internal message format and five
 error classes. Retry decisions are driven by the error *class*, never by
 matching message text. Cached tokens are normalized to a single rule across
 providers, because Anthropic reports them outside `input_tokens` and every
 cost calculation downstream depends on which convention you picked.
 
-**[Prompts and context](docs/02-prompts.md)** — prompts are versioned files
+**[Prompts and context](https://fport.github.io/aimai-kit/02-prompts/)** — prompts are versioned files
 identified as `name@vN+fingerprint`. The document goes into a user message,
 never the system block, so the cache prefix stays byte-identical across
 requests. Trimming is an explicit decision that produces a report line, and
 the non-trimmable sections raise rather than shrink.
 
-**[Tools](docs/03-tools.md)** — the schema is derived from the function
+**[Tools](https://fport.github.io/aimai-kit/03-tools/)** — the schema is derived from the function
 signature, so the two cannot drift apart. Five gates run before anything
 executes, each producing a message the model can act on. Server context
 (`tenant_id`) is injected from the call and is absent from the schema, so a
 model cannot claim to be another tenant.
 
-**[Agent loop](docs/04-agent.md)** — four budgets, one stop reason, and a
+**[Agent loop](https://fport.github.io/aimai-kit/04-agent/)** — four budgets, one stop reason, and a
 final tool-free turn so a stopped run still answers. Every tool call gets a
 result, including refused ones. Repetition is warned about before it is
 stopped, because a warned model usually recovers.
 
-**[Harness](docs/05-harness.md)** — the atomic unit of context is a segment,
+**[Harness](https://fport.github.io/aimai-kit/05-harness/)** — the atomic unit of context is a segment,
 not a message, so trimming can never separate a tool call from its result.
 Large output spills to disk with a reference the agent can follow. Compaction
 converts old turns instead of dropping them, with a versioned prompt that
@@ -145,7 +150,8 @@ names what must survive.
 ## Measurements
 
 Every number below is reproducible from this repository with no credentials.
-Full tables and the honest caveats are in **[docs/measurements.md](docs/measurements.md)**.
+Full tables and the honest caveats are in
+**[Measurements](https://fport.github.io/aimai-kit/measurements/)**.
 
 | Experiment | Finding |
 |---|---|
@@ -206,6 +212,17 @@ A few tests are worth calling out because of what they protect:
   in-process path jail and the cleaned subprocess environment are here;
   closing the network belongs to deployment, and it is the layer that matters
   most.
+
+## Documentation site
+
+```bash
+uv sync --group docs
+uv run mkdocs serve        # http://127.0.0.1:8000
+```
+
+Built with MkDocs Material, two locales (`en`, `tr`), deployed to GitHub Pages
+on every push that touches `docs/`. The build runs with `--strict`, so a broken
+internal link fails CI rather than becoming a 404 someone finds later.
 
 ## Brand assets
 

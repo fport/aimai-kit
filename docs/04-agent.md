@@ -1,4 +1,4 @@
-# Agent loop — why it looks like this
+# 4. Agent loop
 
 The loop is short, and that is the design. Everything it could have absorbed
 lives behind its own seam:
@@ -14,6 +14,13 @@ What is left is the part that is genuinely about looping: check the budget,
 call the model, hand any tool calls to the executor, feed every result back,
 repeat.
 
+!!! done "What we built here"
+
+    A stateless `Agent` and a serializable `Thread`, four budgets and one
+    `StopReason`, a tool-free final turn when a budget stops the run,
+    graduated loop detection, resume-from-checkpoint, a `ScriptedClient` for
+    deterministic tests, and run metrics with a documented reading order.
+
 ## Stateless agent, stateful thread
 
 The `Agent` holds configuration. The `Thread` holds everything else:
@@ -24,6 +31,19 @@ requests. And checkpointing is not a subsystem — it is `to_dict` and
 `from_dict` on one object. Had state been spread across the agent, the
 executor and a few module-level caches, checkpointing would have needed a
 design.
+
+```python
+from aimai_kit.agent import Agent, Budgets, Thread
+
+agent = Agent(client, executor, budgets=Budgets(max_steps=8))
+
+thread = Thread()
+run = agent.run(thread, "What is the status of order 1002?", ctx=ctx)
+
+# The whole run in one JSON object.
+snapshot = thread.to_json()
+resumed = Thread.from_json(snapshot)
+```
 
 The trace is part of the state rather than a logging side channel, for the
 same reason: a run you can resume but not explain is only half recovered.
@@ -42,6 +62,22 @@ Each bounds a different failure:
 Budgets are checked **before** a step, not after. Learning you are over budget
 after spending the money is an audit, not a budget.
 
+```python
+from decimal import Decimal
+
+budgets = Budgets(
+    max_steps=12,
+    max_tokens=120_000,
+    max_usd=Decimal("0.50"),
+    max_seconds=120.0,
+)
+
+run = agent.run(Thread(), task, ctx=ctx)
+print(run.stop_reason)             # StopReason.STEP_BUDGET
+print(run.stop_reason.is_budget)   # True
+print(run.stop_reason.is_success)  # False
+```
+
 The cost budget is optional because it needs a pricing catalog. A missing
 catalog does not silently disable it — spend simply stays at zero and the
 budget never fires, which is visible in the metrics rather than hidden.
@@ -52,7 +88,16 @@ Cutting a run dead at the ceiling leaves the user with nothing.
 
 Instead, a budget stop triggers one last call with `tool_choice="none"` and a
 message telling the model what happened and asking it to answer with what it
-has. A partial answer naming the gap is almost always more useful than
+has.
+
+```python
+thread.add(
+    Role.USER,
+    "You have reached the limit for this task "
+    f"({reason.value}). Do not call any more tools. Answer with what you "
+    "already have, and state explicitly what is still missing.",
+)
+``` A partial answer naming the gap is almost always more useful than
 silence, and much more useful than an answer that pretends the gap is not
 there.
 
@@ -70,6 +115,20 @@ the conversation in a shape most providers reject outright, and the ones that
 accept it produce confused output. The loop makes half-turns impossible: it
 walks the calls and the results together with `strict=True` and appends a
 message for each.
+
+```python
+results = self.executor.call_many(pairs, ctx, allowlist=self.allowlist)
+
+for call, result in zip(calls, results, strict=True):
+    ...
+    thread.add(Role.TOOL, json.dumps({
+        "tool_call_id": call.id,
+        "tool": call.name,
+        "ok": result.ok,
+        "error_code": result.error_code,
+        "content": content,
+    }))
+```
 
 Tool errors are fed back as data, with the error class and a correction
 instruction. A model can only recover from an error it is shown. There is a
@@ -96,8 +155,24 @@ different approach and the run completes. Stopping at the second occurrence
 kills runs that were about to recover; never stopping turns a stuck run into a
 full budget burn.
 
+```python
+REPEAT_WARNING = (
+    "\n\n[note: this exact call was already made earlier in this run and "
+    "returned the same result. Repeating it will not produce new information. "
+    "Use a different tool, different arguments, or answer with what you have.]"
+)
+```
+
 The warning goes inside the tool result rather than into a separate system
-message, because that is where the model is already looking.
+message, because that is where the model is already looking. The thresholds
+are a dial:
+
+```python
+from aimai_kit.agent.loopdetect import LoopDetector
+
+thread = Thread()
+thread.detector = LoopDetector(warn_at=2, stop_at=4)   # more tolerant
+```
 
 ## What loop detection costs, measured
 
@@ -135,6 +210,16 @@ Budget stop rate second. High with a low loop rate means the budget is
 genuinely too tight; the same number with a high loop rate means it is doing
 its job.
 
+```python
+from aimai_kit.agent import run_metrics
+
+metrics = run_metrics(threads)
+print(metrics.as_dict())
+# {'runs': 20, 'completion_rate': 0.75, 'steps_p50': 2.0, 'steps_p95': 3.0,
+#  'tool_error_rate': 0.091, 'loop_rate': 0.25, 'budget_stop_rate': 0.0,
+#  'recovery_rate': 1.0, 'mean_usd': '0.000000'}
+```
+
 Recovery rate last, and it is the most interesting: the share of runs that hit
 a tool error and still finished. A low recovery rate says the tool layer's
 error messages are not actionable — a prompt and description problem, not a
@@ -155,6 +240,16 @@ before the checkpoint was written. Only an idempotent tool closes that. A
 guarantee stated without its limit is worse than no guarantee, because
 somebody will rely on it.
 
-Approval works the same way. A run that hits `needs_approval` stops with the
-call signature recorded; approving that signature and re-running the same
-thread continues from where it stopped.
+Approval works the same way:
+
+```python
+# A run that stops waiting for approval
+run = agent.run(thread, "cancel order 1002", ctx=ctx)
+assert run.stop_reason is StopReason.NEEDS_APPROVAL
+print(thread.pending_approval)   # 'cancel_order:9f2c...'
+
+# After a human approves, resume the same thread
+approved = CallContext(approved_calls=frozenset({thread.pending_approval}))
+run = agent.run(thread, ctx=approved)
+assert run.stop_reason is StopReason.FINISHED
+```
