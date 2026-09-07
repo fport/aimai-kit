@@ -1,6 +1,6 @@
 [project]
 name = "aimai-kit"
-version = "1.0.0"
+version = "1.0.1"
 description = "A framework-free LLM engineering toolkit: provider adapters, prompt and context engineering, structured outputs, tools, and a bounded agent loop"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -65,7 +65,7 @@ build-backend = "hatchling.build"
 packages = ["src/aimai_kit"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src", "tests", "prompts", "config", "docs", "README.md"]
+include = ["src", "tests", "prompts", "config", "docs", "assets", "README.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -80,3 +80,8 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# The generator embeds SVG markup in f-strings; wrapping those lines would
+# make the output harder to read, not easier.
+"assets/_generate.py" = ["E501"]

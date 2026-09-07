@@ -34,10 +34,10 @@ jobs:
         run: uv sync --all-extras --group dev --python ${{ matrix.python-version }}
 
       - name: Lint
-        run: uv run ruff check src/ tests/ scripts/
+        run: uv run ruff check src/ tests/ scripts/ assets/
 
       - name: Format check
-        run: uv run ruff format --check src/ tests/ scripts/
+        run: uv run ruff format --check src/ tests/ scripts/ assets/
 
       # Live tests are excluded by the pytest config; nothing here needs an
       # API key, which is the point of the stub clients.

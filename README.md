@@ -1,9 +1,13 @@
-# aimai-kit
+<p align="center">
+  <img src="https://raw.githubusercontent.com/fport/aimai-kit/main/assets/header.png" alt="aimai-kit" width="860">
+</p>
 
-[![CI](https://github.com/fport/aimai-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/fport/aimai-kit/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/aimai-kit.svg)](https://pypi.org/project/aimai-kit/)
-[![Python](https://img.shields.io/pypi/pyversions/aimai-kit.svg)](https://pypi.org/project/aimai-kit/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+<p align="center">
+  <a href="https://github.com/fport/aimai-kit/actions/workflows/ci.yml"><img src="https://github.com/fport/aimai-kit/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://pypi.org/project/aimai-kit/"><img src="https://img.shields.io/pypi/v/aimai-kit?color=8FE64A&label=pypi" alt="PyPI"></a>
+  <a href="https://pypi.org/project/aimai-kit/"><img src="https://img.shields.io/pypi/pyversions/aimai-kit?color=8FE64A" alt="Python"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-8FE64A" alt="License: MIT"></a>
+</p>
 
 A framework-free LLM engineering toolkit in one Python package: provider
 adapters, prompt and context engineering, structured outputs, a tool layer,
@@ -202,6 +206,22 @@ A few tests are worth calling out because of what they protect:
   in-process path jail and the cleaned subprocess environment are here;
   closing the network belongs to deployment, and it is the layer that matters
   most.
+
+## Brand assets
+
+`assets/` holds the mark in both forms. `_generate.py` builds all of them, so
+a logo nobody can regenerate is not what ships here:
+
+```bash
+python assets/_generate.py            # the SVGs
+uvx --from pillow python assets/_generate.py --png   # the rasters
+```
+
+| File | Use |
+|---|---|
+| `header.svg` / `header.png` | README and docs banner |
+| `logo.svg` | Wordmark for slides and docs |
+| `icon.svg` / `icon.png` | Avatar, favicon, social card |
 
 ## License
 
