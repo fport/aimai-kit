@@ -1,11 +1,11 @@
-# 3. Araç katmanı
+# 3. Tool katmanı
 
 Üç sorumluluk, üç dosya — ve onları ayrı tutmak buradaki asıl tasarım kararı:
 
 | Soru | Nerede cevaplanıyor |
 |---|---|
 | Hangi tool'lar var, kim görebilir? | `decorator.py`, `registry.py` |
-| Her sağlayıcı nasıl söylenmesini istiyor? | `export.py` |
+| Her provider nasıl söylenmesini istiyor? | `export.py` |
 | Bir tool çalıştığında ne oluyor? | `executor.py` |
 
 Bunları tek sınıfta toplamak alışılmış kestirme yol, ve tool yetkilendirmesinin
@@ -15,9 +15,9 @@ başlatmadan test edilemez.
 !!! done "Burada ne yaptık"
 
     `@tool` dekoratörü (imzadan JSON Schema), allowlist'li `ToolRegistry`, üç
-    sağlayıcı için dışa aktarım, beş kapılı `ToolExecutor`, idempotency
+    provider için dışa aktarım, beş kapılı `ToolExecutor`, idempotency
     imzaları, beş tool'luk gerçekçi bir örnek ve seçim doğruluğunu ölçen bir
-    altın küme.
+    golden set.
 
 ## Şema imzadan geliyor
 
@@ -70,7 +70,7 @@ def find_orders(
 
 Desteklenen tipler bilerek kısıtlı: `str`, `int`, `float`, `bool`, `date`,
 `Literal` ve bunların listeleri. Desteklenmeyen bir annotation import anında
-hata veriyor, sağlayıcının çalışma anında reddedeceği bir şema üretmek yerine.
+hata veriyor, provider'ın çalışma anında reddedeceği bir şema üretmek yerine.
 Bu tekniğin sınırı değil, tasarım tercihi: derin iç içe argüman nesnesi
 gereken bir tool neredeyse her zaman iki tool'dur.
 
@@ -100,7 +100,7 @@ assert "requires_approval" not in spec.parameters["properties"]   # şemada yok
 neyin çalışmasına izin verildiğini değil.
 
 Kullanıcının kullanamayacağı bir tool yine de modele ilan edilirse, model
-eninde sonunda onu çağırır, çalıştırıcı reddeder ve önlenebilir bir reddediş
+eninde sonunda onu çağırır, executor reddeder ve önlenebilir bir reddediş
 için bir adım harcanır. Daha kötüsü, reddediş mesajı modele o tool'un var
 olduğunu öğretir.
 
@@ -120,9 +120,9 @@ başladığında farklı byte üretirdi.
 
 ## Üç dışa aktarım, tek şema
 
-Sağlayıcılar iki şeyde anlaşamıyor, başka hiçbir şeyde:
+Providerlar iki şeyde anlaşamıyor, başka hiçbir şeyde:
 
-| Sağlayıcı | Şekil | Şema anahtarı |
+| Provider | Şekil | Şema anahtarı |
 |---|---|---|
 | OpenAI Responses | düz | `parameters` |
 | OpenAI Chat | `function` altında iç içe | `parameters` |
@@ -141,7 +141,7 @@ export_for("anthropic", registry.visible())[0]
 
 Bu tam olarak, soyutlanmadığında her çağrı yerine kopyalanan türden bir fark.
 Tek iç temsil, üç ince dışa aktarıcı — ve `export_for` adaptör katmanının
-üstünde sağlayıcı kimliğine bakan tek yer, o da bir isme bakıyor, bir tipe
+üstünde provider kimliğine bakan tek yer, o da bir isme bakıyor, bir tipe
 değil.
 
 ## Beş kapı
@@ -283,7 +283,7 @@ cache'lemek, çağrılar arasında değişen veriyi gizlerdi.
 2. ne zaman **kullanılmaz**, komşu tool'a yönlendirerek,
 3. yan etkisi var mı.
 
-`scripts/tool_description_experiment.py` aynı altın kümeyi aynı registry'nin
+`scripts/tool_description_experiment.py` aynı golden set'i aynı registry'nin
 üç varyantına karşı koşuyor — şemalar özdeş, yalnızca açıklama metni farklı:
 
 | Varyant | Seçim doğruluğu | Yasak tool oranı |

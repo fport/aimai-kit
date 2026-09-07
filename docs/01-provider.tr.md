@@ -1,6 +1,6 @@
-# 1. Sağlayıcı katmanı
+# 1. Provider katmanı
 
-Bu katmanın işi, üstündeki her şeye bütün sağlayıcıları aynı göstermek —
+Bu katmanın işi, üstündeki her şeye bütün provider'ları aynı göstermek —
 ama önemli olan farkları ezmeden. Bu iki zıt baskı, ve buradaki kararların
 çoğu ikisi arasındaki çizgiyi nereye koyduğumuzla ilgili.
 
@@ -8,7 +8,7 @@ ama önemli olan farkları ezmeden. Bu iki zıt baskı, ve buradaki kararların
 
     `ChatRequest` / `ChatResult` / `Usage` / `Message` iç modelini,
     `LLMClient` protokolünü, beş hata sınıfını, dört adaptörü (OpenAI,
-    Anthropic, Gemini, Azure), retry + fallback sarmalayıcısını ve
+    Anthropic, Gemini, Azure), retry + fallback wrapper'ını ve
     `model-probe` ölçüm CLI'ını yazdık. Sonraki dört katmanın tamamı bu
     protokolün üstünde duruyor ve adaptörlere bir daha dokunulmadı.
 
@@ -54,7 +54,7 @@ adını değiştirmek değildir. Kararlı bir protokolün bütün amacı, üst k
 alt katmanı değiştirmeden büyüyebilmesi — ve buna ulaşmanın yolu doğru tahmin
 etmek değil, yer bırakmak.
 
-### Sağlayıcıya özel ayarlar `extra` içinde
+### Providerya özel ayarlar `extra` içinde
 
 Gemini'nin `thinking_config`'inin ya da OpenAI'ın `reasoning_effort`'ünün
 diğerlerinde karşılığı yok. İç modele koymak onu kirletirdi; erişilemez
@@ -113,7 +113,7 @@ Beş sınıf, ve sınıflandırma retry kararını taşıyor:
 
 | Sınıf | Retry? | Neden |
 |---|---|---|
-| `RateLimited` | evet | sağlayıcı beklemeni söyledi, hatta ne kadar bekleyeceğini de |
+| `RateLimited` | evet | provider beklemeni söyledi, hatta ne kadar bekleyeceğini de |
 | `TransientError` | evet | 5xx ve bağlantı kopması bir denemeye daha değer |
 | `InvalidRequest` | hayır | aynı 400 geri gelir |
 | `AuthError` | hayır | anahtar hâlâ yanlış |
@@ -130,7 +130,7 @@ class InvalidRequest(LLMError):
     retryable = False
 ```
 
-Alternatifi — hata mesajlarında "rate limit" gibi kelimeler aramak — sağlayıcı
+Alternatifi — hata mesajlarında "rate limit" gibi kelimeler aramak — provider
 metnini değiştirdiği gün sessizce bozulur, ve bozulma bir kesinti gibi görünür.
 
 ## Retry ve fallback
@@ -154,7 +154,7 @@ policy = RetryPolicy(
     max_delay_s=20.0,
     jitter_s=0.25,
     total_deadline_s=45.0,   # retry'ın kendisi kesinti olmasın
-    honor_retry_after=True,  # sağlayıcının süresi bizim tahminimizi yener
+    honor_retry_after=True,  # provider'ın süresi bizim tahminimizi yener
 )
 ```
 
@@ -173,7 +173,7 @@ resilient = ResilientClient(
 )
 ```
 
-Sessizce yedeğe düşen bir servis, birincil sağlayıcı tamamen çökmüşken bile
+Sessizce yedeğe düşen bir servis, birincil provider tamamen çökmüşken bile
 her panoda sağlıklı görünür — kullanıcılar hâlâ cevap alıyordur, sadece daha
 yavaş, daha pahalı ve muhtemelen daha zayıf bir modelden. **Fallback oranına
 alarm koymak gerekir**, çünkü hata oranı grafiği hiçbir şey göstermeyecektir.
@@ -194,7 +194,7 @@ uv run model-probe --prompt evals/probe/sample-prompt.txt \
 ```
 
 Bedeli N+1 çağrı. Kazancı sapma sütunu — yerel tiktoken tahmini ile
-sağlayıcının bildirdiği sayı yan yana. tiktoken OpenAI sözlüğüdür ve
+provider'ın bildirdiği sayı yan yana. tiktoken OpenAI sözlüğüdür ve
 Anthropic ile Gemini'de bu sapma %10-20'ye çıkar; context bütçesinin limite
 kadar doldurmak yerine emniyet payı taşımasının sebebi bu.
 

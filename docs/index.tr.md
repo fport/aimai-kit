@@ -34,13 +34,18 @@ paket hakkındaki her cümlenin arkasında API anahtarı olmadan tekrar
     ve karışık dilli identifier okuyucuyu yavaşlatıyor. Bu site iki dilli;
     sağ üstteki seçiciden İngilizcesine geçebilirsin.
 
+    Teknik terimler de İngilizce kalıyor: *provider*, *stub*, *executor*,
+    *wrapper*, *extraction*, *summarizer*, *golden set*. Türkçeleştirilmiş
+    hâlleri ("kukla", "sarmalayıcı", "çalıştırıcı") kimsenin konuşurken
+    kullanmadığı, okurken durdurup düşündüren kelimeler.
+
 ---
 
 ## Beş katman
 
 <div class="grid cards" markdown>
 
--   **[1. Sağlayıcı](01-provider.md)**
+-   **[1. Provider](01-provider.md)**
 
     Tek bir iç mesaj formatı, beş hata sınıfı, dört adaptör. Retry kararı hata
     *sınıfına* bakar, mesaj metnine değil.
@@ -57,10 +62,10 @@ paket hakkındaki her cümlenin arkasında API anahtarı olmadan tekrar
     *Kapattığı tuzak:* belgeyi sistem prompt'una koymak cache'i her istekte
     geçersiz kılar. Hiçbir şey bozulmaz — sadece fatura katlanır.
 
--   **[3. Araçlar](03-tools.md)**
+-   **[3. Tool'lar](03-tools.md)**
 
-    Fonksiyon imzasından türetilen şemalar, üç sağlayıcı için dışa aktarım ve
-    önünde beş kapı olan bir çalıştırıcı.
+    Fonksiyon imzasından türetilen şemalar, üç provider için dışa aktarım ve
+    önünde beş kapı olan bir executor.
 
     *Kapattığı tuzak:* kiracı kimliğini şemaya koymak, modelin başka bir
     kiracı olduğunu iddia edebilmesi demek.
@@ -71,7 +76,7 @@ paket hakkındaki her cümlenin arkasında API anahtarı olmadan tekrar
     `from_dict`'ten ibaret checkpoint'ler.
 
     *Kapattığı tuzak:* üç tool çağrısı yapıp iki sonuç dönen bir asistan turu,
-    çoğu sağlayıcının reddettiği bir konuşma şeklidir.
+    çoğu provider'ın reddettiği bir konuşma şeklidir.
 
 -   **[5. Harness](05-harness.md)**
 
@@ -103,12 +108,12 @@ paket hakkındaki her cümlenin arkasında API anahtarı olmadan tekrar
         )
     )
     print(result.text)
-    # cached_input_tokens her zaman input_tokens'ın alt kümesi — sağlayıcı
+    # cached_input_tokens her zaman input_tokens'ın alt kümesi — provider
     # farkı adaptörde normalize edildi.
     print(result.usage.input_tokens, result.usage.cached_input_tokens)
     ```
 
-=== "Uyduramayan çıkarım"
+=== "Uyduramayan extraction"
 
     ```python
     from aimai_kit.prompts import PromptRegistry, build_request, generate_structured
@@ -164,11 +169,11 @@ uyarıları **[Ölçümler](measurements.md)** sayfasında.
 | Döngü tespiti | p95 adım 7 → 3; karşılığında tamamlanma %100 → %75 |
 | Harness konfigürasyonları | Naif kırpma 101k token ve cevap yok; compaction + alt-ajan 12k token ve cevap yerinde |
 
-!!! warning "Bu sayıların arkasındaki modeller kukla"
+!!! warning "Bu sayıların arkasındaki modeller stub"
 
-    Sağlayıcı değil. Gerçek iş yapıyorlar — çıkarım kuklası sözleşmeleri
-    regex'le ayrıştırıyor, seçim kuklası sorguları tool açıklamalarına göre
-    puanlıyor, harness kuklası yalnızca context'inde olandan cevap veriyor —
+    Provider değil. Gerçek iş yapıyorlar — extraction stub'ı sözleşmeleri
+    regex'le ayrıştırıyor, seçim stub'ı sorguları tool açıklamalarına göre
+    puanlıyor, harness stub'ı yalnızca context'inde olandan cevap veriyor —
     ama sentetik verinin şeklini bildikleri için doğrulukları iyimser.
 
     Bu bilinçli. Bu tablolar ölçüm altyapısının çalıştığını ve

@@ -16,7 +16,7 @@ Bir tool çağrısı ve sonucu tek bir şeydir.
 
 Sonucu atıp çağrıyı tutarsan model, hiç cevaplanmamış bir istekle bakakalır.
 Çağrıyı atıp sonucu tutarsan kimsenin sormadığı bir soruya cevap kalır. Çoğu
-sağlayıcı birinci şekli doğrudan reddeder.
+provider birinci şekli doğrudan reddeder.
 
 O yüzden kırpılan birim bir **segment**: birlikte yaşayan ya da birlikte
 düşen bir veya daha fazla mesaj.
@@ -135,7 +135,7 @@ if compactor.should_compact(stats.fill_ratio, segments):
 sonucundan ayırırdı — segment modelinin var olma sebebinin tam tersi.
 
 **Prompt sürümlü bir dosya.** Compaction, ajanın kendi belleğine uygulanan
-kayıplı bir dönüşüm; "bu durumu hangi özetleyici sürümü üretti" sorusunun
+kayıplı bir dönüşüm; "bu durumu hangi summarizer sürümü üretti" sorusunun
 cevabı olmalı. Diğer bütün prompt'larla aynı registry'den geçiyor ve özet
 segmenti `prompt_ref`'i kaydediyor.
 
@@ -152,7 +152,7 @@ kötüdür** — çünkü güvenilir görünür.
 Needle testi bilinen bir gerçeği konuşmanın başına koyuyor, compaction
 tetiklenene kadar gürültüyle gömüyor, sonra gerçeğin sağ kalıp kalmadığına
 bakıyor. Üç farklı needle — bir kimlik, bir tutar, bir tarih — çünkü tesadüfen
-bir sayıyı koruyan bir özetleyici, sayıları koruyan bir özetleyici değildir.
+bir sayıyı koruyan bir summarizer, sayıları koruyan bir summarizer değildir.
 
 | Prompt | Sipariş no `ORD-88421` | Tutar `125,000` | Tarih `2025-03-14` |
 |---|---|---|---|
@@ -240,7 +240,7 @@ print(result.report.confident)        # True
 print(result.compression_ratio)       # 18.4  <- içeride harcanan / dışarı dönen
 ```
 
-Serbest metin yerine kısıtlı olması, çıkarımın kısıtlı olmasıyla aynı sebeple:
+Serbest metin yerine kısıtlı olması, extraction'ın kısıtlı olmasıyla aynı sebeple:
 düzyazıyla cevap veren bir alt-ajan, çağırana kullanacağı bir şey değil
 yorumlayacağı bir şey verir.
 

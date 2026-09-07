@@ -5,13 +5,13 @@ duruyor:
 
 | Sorumluluk | Nerede |
 |---|---|
-| Tool çalıştırma | araç katmanının çalıştırıcısı |
+| Tool çalıştırma | tool katmanının executor'ı |
 | İstek kurulumu | prompt katmanı |
-| Telemetri | sağlayıcı katmanının dayanıklı istemcisi |
+| Telemetri | provider katmanının dayanıklı istemcisi |
 | Döngü tespiti | kendi testleri olan ayrı bir nesne |
 
 Geriye kalan, gerçekten döngüyle ilgili olan kısım: bütçeyi kontrol et, modeli
-çağır, tool çağrılarını çalıştırıcıya devret, **her** sonucu geri besle,
+çağır, tool çağrılarını executor'a devret, **her** sonucu geri besle,
 tekrarla.
 
 !!! done "Burada ne yaptık"
@@ -101,14 +101,14 @@ Eksiği adlandıran kısmi bir cevap, sessizlikten neredeyse her zaman daha
 faydalıdır — ve eksiğin olmadığını varsayan bir cevaptan çok daha faydalıdır.
 
 O son turun maliyeti seçtiğin tavanın **içinde** olmalı, üstünde değil. Ve bir
-sağlayıcı `tool_choice="none"`'ı yok sayarsa, iz kaydı son turu `ok=False`
+provider `tool_choice="none"`'ı yok sayarsa, iz kaydı son turu `ok=False`
 olarak işaretliyor — boş bir cevabın normal bir durma gibi görünmesi yerine.
 
 ## Her tool çağrısı bir sonuç alıyor
 
 Reddedilenler dahil, timeout olanlar dahil.
 
-Üç çağrı isteyip iki sonuç dönen bir asistan turu, çoğu sağlayıcının doğrudan
+Üç çağrı isteyip iki sonuç dönen bir asistan turu, çoğu provider'ın doğrudan
 reddettiği bir konuşma şekli bırakır; kabul edenler de karışık çıktı üretir.
 Döngü yarım turu imkânsız kılıyor:
 
@@ -137,7 +137,7 @@ Yakaladığı hata çok belirli: ajan `get_order(id=42)` çağırıyor, cevabı
 beğenmiyor, `get_order(id=42)` çağırıyor. Hiçbir şey hata vermiyor. Her adım
 sağlıklı görünüyor. Bütçe boşalıyor.
 
-Tespit, araç katmanının çağrı imzasını yeniden kullanıyor; argüman sırasını
+Tespit, tool katmanının çağrı imzasını yeniden kullanıyor; argüman sırasını
 değiştirmek tekrarı gizleyemiyor.
 
 Tepki kademeli:
@@ -203,7 +203,7 @@ gerçekten dar demektir; yüksek döngü oranıyla birlikte aynı sayı bütçen
 işini yaptığı anlamına gelir.
 
 En son kurtarma oranı, ve en ilginci o: tool hatası alıp yine de tamamlanan
-koşuların oranı. Düşük bir kurtarma oranı, araç katmanının hata mesajlarının
+koşuların oranı. Düşük bir kurtarma oranı, tool katmanının hata mesajlarının
 üzerine iş yapılabilir olmadığını söyler — bu bir prompt ve açıklama sorunu,
 bütçe sorunu değil.
 

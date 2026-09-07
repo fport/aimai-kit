@@ -2,11 +2,11 @@
 
 Buradaki her rakam, depodan kimlik bilgisi olmadan tekrar üretilebilir.
 
-!!! warning "Modeller kukla, sağlayıcı değil"
+!!! warning "Modeller stub, provider değil"
 
-    Hepsi deterministik kuklalara karşı koşuyor. Kuklalar gerçek iş yapıyor —
-    çıkarım kuklası sözleşmeleri regex'le ayrıştırıyor, seçim kuklası
-    sorguları tool açıklamalarına göre puanlıyor, harness kuklası yalnızca
+    Hepsi deterministik stub'lara karşı koşuyor. Stub'lar gerçek iş yapıyor —
+    extraction stub'ı sözleşmeleri regex'le ayrıştırıyor, seçim stub'ı
+    sorguları tool açıklamalarına göre puanlıyor, harness stub'ı yalnızca
     context'inde olandan cevap veriyor — ama sentetik verinin şeklini
     bildikleri için doğrulukları iyimser.
 
@@ -14,7 +14,7 @@ Buradaki her rakam, depodan kimlik bilgisi olmadan tekrar üretilebilir.
     karşılaştırmaların tekrar üretilebildiğini göstermek. Model hakkında sayı
     için aynı komutları `--model anthropic:claude-opus-5` ile koştur.
 
-Altın kümeler sentetik: `scripts/generate_golden_set.py` (36 sözleşme, 10'u
+Golden setler sentetik: `scripts/generate_golden_set.py` (36 sözleşme, 10'u
 kasıtlı kenar vaka) ve `evals/tool_cases/cases.py` (22 vaka, 3'ü tool
 çağrılmamasını bekliyor). Gerçek bir değerlendirme için kendi verinle
 değiştir.
@@ -27,14 +27,14 @@ uv run prompt-lab eval --prompt extract_contract@v2 --schema v2 \
 ```
 
 36 belge, `max_attempts=3`. Maliyet sütunu bir **projeksiyon**: token profili
-kuklanın, fiyatlar `claude-opus-5`'in.
+stub'ın, fiyatlar `claude-opus-5`'in.
 
 | prompt_ref | şema | İlk denemede geçme | Ort. deneme | Grounding | Girdi tok p50 | Maliyet/belge |
 |---|---|---|---|---|---|---|
 | `extract_contract@v1+099030d1` | v1 | **%83,3** | 1,17 | %0,0 | 729 | $0,0080 |
 | `extract_contract@v2+19009d12` | v2 | %72,2 | 1,28 | **%100,0** | 1.982 | $0,0089 |
 
-**v2 ilk denemede daha az geçiyor ve bu bir gerileme değil.** v2, sağlayıcının
+**v2 ilk denemede daha az geçiyor ve bu bir gerileme değil.** v2, provider'ın
 doğrulamadığı çapraz alan kurallarını uyguluyor (bitiş başlangıçtan sonra,
 yüksek risk gerekçe ister, tutar para birimi ister). v1 hiçbirini
 uygulamıyor, yani daha zayıf bir sınavdan "geçiyor".
@@ -95,13 +95,13 @@ uv run prompt-lab eval --min-field-accuracy 0.90
 | `embedded_instruction`, `role_switch`, `prompt_leak`, `format_escape` | 20 | %100 |
 | **toplam** | **60** | **%100** |
 
-Bu, sarmalayıcının delinip delinemeyeceğini ve belge içeriğinin sistem bloğuna
+Bu, wrapper'ın delinip delinemeyeceğini ve belge içeriğinin sistem bloğuna
 ulaşıp ulaşamayacağını ölçüyor. Deterministik, dolayısıyla %100 beklenti ve
 altına düşmesi bir regresyon.
 
 Davranışsal yarı — gerçek bir model enjekte edilmiş talimatı izliyor mu — ayrı
 bir `@pytest.mark.live` testinde ve olasılıksal. Prompt katmanı ilk siper, tek
-savunma değil; gerçek yetkilendirme araç katmanının işi.
+savunma değil; gerçek yetkilendirme tool katmanının işi.
 
 ## 4. Tool açıklamaları
 
@@ -205,7 +205,7 @@ uv run model-probe --prompt evals/probe/sample-prompt.txt \
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | _(senin koşun)_ | | | | | | | | | | | |
 
-`in~` yerel tiktoken tahmini, `in` sağlayıcının bildirdiği sayı, `drift%`
+`in~` yerel tiktoken tahmini, `in` provider'ın bildirdiği sayı, `drift%`
 aradaki fark. tiktoken OpenAI sözlüğüdür; Anthropic ve Gemini'de bu sapma
 %10-20'ye çıkar — context bütçesinin limite kadar doldurmak yerine emniyet
 payı taşımasının sebebi bu.

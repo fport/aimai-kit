@@ -85,9 +85,9 @@ plugins:
             Start here: Buradan başla
             Overview: Genel bakış
             Layers: Katmanlar
-            1. Provider: 1. Sağlayıcı
+            1. Provider: 1. Provider katmanı
             2. Prompts and context: 2. Prompt ve context
-            3. Tools: 3. Araçlar
+            3. Tools: 3. Tool katmanı
             4. Agent loop: 4. Ajan döngüsü
             5. Harness: 5. Harness
             Measurements: Ölçümler

@@ -1,7 +1,7 @@
 # 2. Prompt ve context katmanı
 
 Bu katman modele **ne gönderdiğimizi** ve modelden **ne aldığımızı** disiplin
-altına alıyor. Sağlayıcı katmanının `LLMClient`'ı üzerine oturuyor, yeni bir
+altına alıyor. Provider katmanının `LLMClient`'ı üzerine oturuyor, yeni bir
 SDK importu ve yeni bir hata sınıfı getirmiyor — bu da o protokolün doğru
 çizilip çizilmediğinin ilk gerçek sınavıydı. Sonuç: mevcut tiplere üç alan
 eklendi, üçü de geriye dönük uyumlu.
@@ -11,7 +11,7 @@ eklendi, üçü de geriye dönük uyumlu.
     Sürümlü prompt dosyaları ve `PromptRegistry`, cache önekini stabil tutan
     blok sırası, raporlayan bir context bütçesi, güvenilmeyen veriyi
     sarmalayan güven sınırı, çapraz alan kuralları olan Pydantic şemaları,
-    sınırlı onarım döngüsü, alıntı doğrulaması ve altın küme üzerinde koşan
+    sınırlı onarım döngüsü, alıntı doğrulaması ve golden set üzerinde koşan
     bir eval CLI'ı.
 
 ## Prompt'lar sürümlü dosyalar ve parmak izi taşıyor
@@ -55,7 +55,7 @@ raporlanır. Oysa prompt boştu.
 
 ## Cache öneki ve yalnızca faturada görünen hata
 
-Sağlayıcı prompt cache'i önek eşleşmesiyle çalışır: isteğin başından itibaren
+Provider prompt cache'i önek eşleşmesiyle çalışır: isteğin başından itibaren
 byte byte aynı olan kısım cache'ten okunur, ilk farklı byte'tan sonrası
 yeniden işlenir.
 
@@ -221,7 +221,7 @@ modda opsiyonel alan diye bir şey yok. Alanı `required` yapmak, modeli alanı
 ## Onarım döngüsü
 
 Şema bağlı olsa bile çıktı geçersiz gelebilir. Çapraz alan kuralları
-(`end_date > start_date`) Pydantic validator'ıdır, sağlayıcının zorladığı
+(`end_date > start_date`) Pydantic validator'ıdır, provider'ın zorladığı
 hiçbir şeyin içinde değildir.
 
 ```python
@@ -258,7 +258,7 @@ genelde daha kötü sonuç verir.
 
     1,0'a yakınken şema ve prompt uyumludur. 1,5'i geçmesi üç şeyden birini
     gösterir — şema karmaşıklaştı, prompt'un format bölümü şemayla çelişmeye
-    başladı, ya da sağlayıcı modeli altından değiştirdi. Üçü de kaliteden
+    başladı, ya da provider modeli altından değiştirdi. Üçü de kaliteden
     **önce** maliyet olarak görünür.
 
 ## Grounding: şema biçimi doğrular, içeriği değil
