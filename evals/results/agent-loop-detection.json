@@ -1,0 +1,24 @@
+{
+  "detection_on": {
+    "runs": 20,
+    "completion_rate": 0.75,
+    "steps_p50": 2.0,
+    "steps_p95": 3.0,
+    "tool_error_rate": 0.091,
+    "loop_rate": 0.25,
+    "budget_stop_rate": 0.0,
+    "recovery_rate": 1.0,
+    "mean_usd": "0.000000"
+  },
+  "detection_off": {
+    "runs": 20,
+    "completion_rate": 1.0,
+    "steps_p50": 2.0,
+    "steps_p95": 7.0,
+    "tool_error_rate": 0.062,
+    "loop_rate": 0.0,
+    "budget_stop_rate": 0.0,
+    "recovery_rate": 1.0,
+    "mean_usd": "0.000000"
+  }
+}

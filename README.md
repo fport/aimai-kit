@@ -7,8 +7,9 @@ A framework-free LLM engineering toolkit in one Python package.
 | 1 | `provider/` | Token/cost/latency measurement, four adapters, retry and fallback |
 | 2 | `prompts/` | Versioned prompts, context budget, structured output, a repair loop |
 | 3 | `tools/` | Schemas from signatures, three provider exports, a five-gate executor |
+| 4 | `agent/` | A bounded loop, four budgets, loop detection, checkpoints |
 
-Later layers (agent, harness) build on these.
+Later layers (harness) build on these.
 
 No vendor SDK outside `provider/adapters/`, and every layer runs
 without an API key.
@@ -67,6 +68,17 @@ result = executor.call(
 print(result.ok, result.content)
 ```
 
+An agent with tools:
+
+```python
+from aimai_kit.agent import Agent, Budgets, Thread
+
+agent = Agent(client, executor, budgets=Budgets(max_steps=8, max_seconds=60))
+run = agent.run(Thread(), "What is the status of order 1002?",
+                ctx=CallContext(user_id="u-1", tenant_id="t-1"))
+print(run.stop_reason, run.answer)
+```
+
 ```bash
 # Compare models: TTFT from streaming, real usage from one complete call
 uv run model-probe --prompt evals/probe/sample-prompt.txt \
@@ -98,6 +110,11 @@ executes, each producing a message the model can act on. Server context
 (`tenant_id`) is injected from the call and is absent from the schema, so a
 model cannot claim to be another tenant.
 
+**[Agent loop](docs/04-agent.md)** — four budgets, one stop reason, and a
+final tool-free turn so a stopped run still answers. Every tool call gets a
+result, including refused ones. Repetition is warned about before it is
+stopped, because a warned model usually recovers.
+
 ---
 
 ## Measurements
@@ -110,6 +127,7 @@ Full tables and the caveats are in **[docs/measurements.md](docs/measurements.md
 | Schema v1 vs v2 | Grounding 0% -> 100%, at 0.11 more attempts and 11% more cost per document |
 | Grounding attribution | v1's `start_date` reads 0% with grounding on and 88.9% with it off |
 | Tool descriptions | Cutting descriptions to one line leaves selection accuracy unchanged but raises forbidden-tool calls from 0% to 4.5% |
+| Loop detection | p95 steps 7 -> 3, at the cost of completion 100% -> 75% on runs that would have recovered on their own |
 
 The models behind these numbers are deterministic stubs, not providers. The
 point is that the measurement harness works and the comparisons are
@@ -135,6 +153,7 @@ A few tests are worth calling out because of what they protect:
 | `test_schema_regression.py` | A schema changing without anyone noticing that old eval results are now incomparable |
 | `test_eval_harness.py` | The eval harness silently returning "correct" for everything |
 | `test_executor_gates.py` | A traceback reaching the model, or a refusal disclosing a tool it may not use |
+| `test_loop_detection.py` | A repeat slipping through because the model reordered its arguments |
 
 ## License
 
