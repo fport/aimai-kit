@@ -63,6 +63,8 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.emoji:
@@ -91,6 +93,7 @@ plugins:
             4. Agent loop: 4. Ajan döngüsü
             5. Harness: 5. Harness
             Measurements: Ölçümler
+            Production checklist: Proda çıkmadan checklist
 
 nav:
   - Start here:
@@ -102,6 +105,7 @@ nav:
       - 4. Agent loop: 04-agent.md
       - 5. Harness: 05-harness.md
   - Measurements: measurements.md
+  - Production checklist: checklist.md
 
 extra:
   social:

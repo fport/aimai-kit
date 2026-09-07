@@ -145,6 +145,9 @@ Large output spills to disk with a reference the agent can follow. Compaction
 converts old turns instead of dropping them, with a versioned prompt that
 names what must survive.
 
+Every rule above, as something you can run through before a release:
+**[production checklist](https://fport.github.io/aimai-kit/checklist/)**.
+
 ---
 
 ## Measurements

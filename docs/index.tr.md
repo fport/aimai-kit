@@ -179,3 +179,13 @@ uyarıları **[Ölçümler](measurements.md)** sayfasında.
     Bu bilinçli. Bu tablolar ölçüm altyapısının çalıştığını ve
     karşılaştırmaların tekrar üretilebildiğini gösteriyor. Model hakkında sayı
     istiyorsan aynı komutları `--model anthropic:claude-opus-5` ile koştur.
+
+---
+
+## Proda çıkmadan
+
+Beş bölüm her katmanın neden öyle göründüğünü anlatıyor.
+**[Proda çıkmadan checklist](checklist.md)** ise bunu bir sürüm öncesi gözden
+geçirebileceğin bir şeye çeviriyor: bir provider bağlarken, bir prompt yazarken, bir
+tool eklerken, bir budget ayarlarken ve iş uzadığında neye bakacaksın — her madde,
+bölümlerden birinin düzeltmek zorunda kaldığı bir arızaya dayanıyor.

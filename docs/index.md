@@ -166,3 +166,13 @@ tables and their caveats are in **[Measurements](measurements.md)**.
     That is deliberate. These tables show that the measurement harness works
     and that the comparisons reproduce. For numbers about a model, run the
     same commands with `--model anthropic:claude-opus-5`.
+
+---
+
+## Before you ship any of this
+
+The five chapters explain why each layer looks the way it does. The
+**[production checklist](checklist.md)** turns that into something you can run
+through before a release: what to check when you wire a provider, write a prompt,
+add a tool, set a budget or let a run get long — every item tracing back to a
+failure one of the chapters had to fix.
