@@ -1,6 +1,10 @@
 # aimai-kit
 
-A framework-free LLM engineering toolkit in one Python package.
+A framework-free LLM engineering toolkit in one Python package: provider
+adapters, prompt and context engineering, structured outputs, a tool layer,
+a bounded agent loop, and a harness for long-running work.
+
+Five layers, each built on the one below it, each with its own measurements.
 
 | Layer | Package | What it adds |
 |---|---|---|
@@ -8,18 +12,25 @@ A framework-free LLM engineering toolkit in one Python package.
 | 2 | `prompts/` | Versioned prompts, context budget, structured output, a repair loop |
 | 3 | `tools/` | Schemas from signatures, three provider exports, a five-gate executor |
 | 4 | `agent/` | A bounded loop, four budgets, loop detection, checkpoints |
+| 5 | `harness/` | Segments, spill, compaction, a memory store, sub-agents |
 
-Later layers (harness) build on these.
+**343 tests**, no vendor SDK outside `provider/adapters/`, and every layer
+runnable without an API key.
 
-No vendor SDK outside `provider/adapters/`, and every layer runs
-without an API key.
+---
 
 ## Install
 
 ```bash
+pip install "aimai-kit[providers]"
+```
+
+From source:
+
+```bash
 uv sync --all-extras --group dev
 cp .env.example .env     # add your keys
-uv run pytest            # live tests excluded
+uv run pytest            # 343 tests, live ones excluded
 ```
 
 ## Quick start
@@ -54,35 +65,34 @@ summary, grounding = verify_citations(repaired.value, document)
 print(summary.amount_minor, grounding.ratio)   # ungrounded fields are dropped
 ```
 
-A safe tool call:
+An agent with tools:
 
 ```python
+from aimai_kit.agent import Agent, Budgets, Thread
 from aimai_kit.tools import CallContext, ToolExecutor
 from aimai_kit.tools.examples.orders import build_registry, seed_database
 
 seed_database()
 executor = ToolExecutor(build_registry())
-result = executor.call(
-    "get_order", '{"order_id": "1002"}', CallContext(user_id="u-1", tenant_id="t-1")
-)
-print(result.ok, result.content)
-```
-
-An agent with tools:
-
-```python
-from aimai_kit.agent import Agent, Budgets, Thread
-
 agent = Agent(client, executor, budgets=Budgets(max_steps=8, max_seconds=60))
 run = agent.run(Thread(), "What is the status of order 1002?",
                 ctx=CallContext(user_id="u-1", tenant_id="t-1"))
 print(run.stop_reason, run.answer)
 ```
 
+## Command line
+
 ```bash
 # Compare models: TTFT from streaming, real usage from one complete call
 uv run model-probe --prompt evals/probe/sample-prompt.txt \
   --models anthropic:claude-opus-5 anthropic:claude-haiku-4-5 -n 5
+
+# Extraction quality against a golden set (no API key needed)
+uv run prompt-lab eval --prompt extract_contract@v2 --schema v2 \
+  --pricing config/pricing.toml --pricing-model claude-opus-5
+
+# With a real model
+uv run prompt-lab --model anthropic:claude-opus-5 eval
 ```
 
 ---
@@ -115,32 +125,39 @@ final tool-free turn so a stopped run still answers. Every tool call gets a
 result, including refused ones. Repetition is warned about before it is
 stopped, because a warned model usually recovers.
 
+**[Harness](docs/05-harness.md)** — the atomic unit of context is a segment,
+not a message, so trimming can never separate a tool call from its result.
+Large output spills to disk with a reference the agent can follow. Compaction
+converts old turns instead of dropping them, with a versioned prompt that
+names what must survive.
+
 ---
 
 ## Measurements
 
 Every number below is reproducible from this repository with no credentials.
-Full tables and the caveats are in **[docs/measurements.md](docs/measurements.md)**.
+Full tables and the honest caveats are in **[docs/measurements.md](docs/measurements.md)**.
 
 | Experiment | Finding |
 |---|---|
-| Schema v1 vs v2 | Grounding 0% -> 100%, at 0.11 more attempts and 11% more cost per document |
-| Grounding attribution | v1's `start_date` reads 0% with grounding on and 88.9% with it off |
+| Schema v1 vs v2 | Grounding 0% → 100%, at 0.06 more attempts and 16% more cost per document |
+| Grounding attribution | v1's `start_date` reads 0% with grounding on and 88.9% with it off — the drop is the missing citation field, not extraction |
 | Tool descriptions | Cutting descriptions to one line leaves selection accuracy unchanged but raises forbidden-tool calls from 0% to 4.5% |
-| Loop detection | p95 steps 7 -> 3, at the cost of completion 100% -> 75% on runs that would have recovered on their own |
+| Loop detection | p95 steps 7 → 3, at the cost of completion 100% → 75% on runs that would have recovered on their own |
+| Harness configurations | Naive trim 101k tokens and no answer; compaction 69.5k and no answer; compaction plus a sub-agent 12k and the answer survives |
 
-The models behind these numbers are deterministic stubs, not providers. The
-point is that the measurement harness works and the comparisons are
-reproducible; run the same commands with `--model anthropic:claude-opus-5` for
-numbers about a model.
+The models behind these numbers are deterministic stubs, not providers. That
+is deliberate: the point is that the measurement harness works and the
+comparisons are reproducible. Run the same commands with `--model
+anthropic:claude-opus-5` for numbers about a model.
 
 ---
 
 ## Testing
 
 ```bash
-uv run pytest              # default run
-uv run pytest -m live      # calls real APIs, needs keys
+uv run pytest                 # 343 tests
+uv run pytest -m live         # calls real APIs, needs keys
 uv run ruff check src/ tests/
 ```
 
@@ -151,9 +168,30 @@ A few tests are worth calling out because of what they protect:
 | `test_no_vendor_leak.py` | An SDK import escaping `adapters/` (AST-based, with an inverse check) |
 | `test_prefix_stable.py` | A variable field leaking into the cache prefix and silently multiplying the bill |
 | `test_schema_regression.py` | A schema changing without anyone noticing that old eval results are now incomparable |
+| `test_segments.py` | A trim separating a tool call from its result |
+| `test_compaction.py` | Compaction dropping a planted fact — three needles, both prompt versions |
 | `test_eval_harness.py` | The eval harness silently returning "correct" for everything |
-| `test_executor_gates.py` | A traceback reaching the model, or a refusal disclosing a tool it may not use |
-| `test_loop_detection.py` | A repeat slipping through because the model reordered its arguments |
+
+---
+
+## Known limits
+
+- **The golden sets are synthetic.** `scripts/generate_golden_set.py` writes 36
+  contracts, 10 of them deliberate edge cases. Replace them with your own
+  documents for a real evaluation; the `EDGE_CASES` map is the guide for what
+  to look for.
+- **The stubs are not models.** They perform real extraction and real
+  selection, but they know the shape of the synthetic data, so their accuracy
+  is optimistic.
+- **The pricing catalog only ships Anthropic rows.** OpenAI and Gemini are
+  commented out in `config/pricing.toml`; fill them from your own billing
+  page. A missing model produces a visible "window not in catalog" warning
+  rather than a silent zero.
+- **Synchronous only.** Async adds no teaching value at this size.
+- **Isolation is three layers and only two are in this repository.** The
+  in-process path jail and the cleaned subprocess environment are here;
+  closing the network belongs to deployment, and it is the layer that matters
+  most.
 
 ## License
 

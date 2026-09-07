@@ -11,3 +11,6 @@ build/
 *.egg-info/
 evals/**/local-*.json
 .DS_Store
+
+# Local artifacts from the example tools and experiments
+.aimai-*.sqlite3

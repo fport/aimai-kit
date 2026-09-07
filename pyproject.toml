@@ -1,6 +1,6 @@
 [project]
 name = "aimai-kit"
-version = "0.4.0"
+version = "1.0.0"
 description = "A framework-free LLM engineering toolkit: provider adapters, prompt and context engineering, structured outputs, tools, and a bounded agent loop"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -18,7 +18,7 @@ keywords = [
     "context-engineering",
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",

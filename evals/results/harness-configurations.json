@@ -1,0 +1,29 @@
+{
+  "naive_trim": {
+    "steps": 30,
+    "total_tokens": 101114,
+    "fill_p95": 0.979,
+    "answered": false,
+    "budget_exhausted": false,
+    "compactions": 0,
+    "spilled": 30
+  },
+  "compaction": {
+    "steps": 30,
+    "total_tokens": 69539,
+    "fill_p95": 0.692,
+    "answered": false,
+    "budget_exhausted": false,
+    "compactions": 2,
+    "spilled": 30
+  },
+  "compaction_subagent": {
+    "steps": 30,
+    "total_tokens": 12018,
+    "fill_p95": 0.134,
+    "answered": true,
+    "budget_exhausted": false,
+    "compactions": 0,
+    "spilled": 0
+  }
+}
