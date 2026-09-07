@@ -6,8 +6,9 @@ A framework-free LLM engineering toolkit in one Python package.
 |---|---|---|
 | 1 | `provider/` | Token/cost/latency measurement, four adapters, retry and fallback |
 | 2 | `prompts/` | Versioned prompts, context budget, structured output, a repair loop |
+| 3 | `tools/` | Schemas from signatures, three provider exports, a five-gate executor |
 
-Later layers (tools, agent, harness) build on these.
+Later layers (agent, harness) build on these.
 
 No vendor SDK outside `provider/adapters/`, and every layer runs
 without an API key.
@@ -52,6 +53,20 @@ summary, grounding = verify_citations(repaired.value, document)
 print(summary.amount_minor, grounding.ratio)   # ungrounded fields are dropped
 ```
 
+A safe tool call:
+
+```python
+from aimai_kit.tools import CallContext, ToolExecutor
+from aimai_kit.tools.examples.orders import build_registry, seed_database
+
+seed_database()
+executor = ToolExecutor(build_registry())
+result = executor.call(
+    "get_order", '{"order_id": "1002"}', CallContext(user_id="u-1", tenant_id="t-1")
+)
+print(result.ok, result.content)
+```
+
 ```bash
 # Compare models: TTFT from streaming, real usage from one complete call
 uv run model-probe --prompt evals/probe/sample-prompt.txt \
@@ -77,6 +92,12 @@ never the system block, so the cache prefix stays byte-identical across
 requests. Trimming is an explicit decision that produces a report line, and
 the non-trimmable sections raise rather than shrink.
 
+**[Tools](docs/03-tools.md)** — the schema is derived from the function
+signature, so the two cannot drift apart. Five gates run before anything
+executes, each producing a message the model can act on. Server context
+(`tenant_id`) is injected from the call and is absent from the schema, so a
+model cannot claim to be another tenant.
+
 ---
 
 ## Measurements
@@ -88,6 +109,7 @@ Full tables and the caveats are in **[docs/measurements.md](docs/measurements.md
 |---|---|
 | Schema v1 vs v2 | Grounding 0% -> 100%, at 0.11 more attempts and 11% more cost per document |
 | Grounding attribution | v1's `start_date` reads 0% with grounding on and 88.9% with it off |
+| Tool descriptions | Cutting descriptions to one line leaves selection accuracy unchanged but raises forbidden-tool calls from 0% to 4.5% |
 
 The models behind these numbers are deterministic stubs, not providers. The
 point is that the measurement harness works and the comparisons are
@@ -112,6 +134,7 @@ A few tests are worth calling out because of what they protect:
 | `test_prefix_stable.py` | A variable field leaking into the cache prefix and silently multiplying the bill |
 | `test_schema_regression.py` | A schema changing without anyone noticing that old eval results are now incomparable |
 | `test_eval_harness.py` | The eval harness silently returning "correct" for everything |
+| `test_executor_gates.py` | A traceback reaching the model, or a refusal disclosing a tool it may not use |
 
 ## License
 

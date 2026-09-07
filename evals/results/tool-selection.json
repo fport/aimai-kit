@@ -1,0 +1,36 @@
+{
+  "full": {
+    "cases": 22,
+    "selection_accuracy": 0.909,
+    "argument_validity_rate": 1.0,
+    "forbidden_call_rate": 0.0,
+    "no_tool_accuracy": 1.0,
+    "failures": [
+      "tc-02: expected ['find_orders'], chose ['get_order']",
+      "tc-04: expected ['build_report'], chose ['get_order']"
+    ]
+  },
+  "no_boundaries": {
+    "cases": 22,
+    "selection_accuracy": 0.909,
+    "argument_validity_rate": 1.0,
+    "forbidden_call_rate": 0.0,
+    "no_tool_accuracy": 1.0,
+    "failures": [
+      "tc-02: expected ['find_orders'], chose ['get_order']",
+      "tc-04: expected ['build_report'], chose ['get_order']"
+    ]
+  },
+  "one_line": {
+    "cases": 22,
+    "selection_accuracy": 0.909,
+    "argument_validity_rate": 1.0,
+    "forbidden_call_rate": 0.045,
+    "no_tool_accuracy": 1.0,
+    "failures": [
+      "tc-02: expected ['find_orders'], chose ['cancel_order']",
+      "tc-02: called a forbidden tool ['cancel_order']",
+      "tc-08: expected ['build_report'], chose []"
+    ]
+  }
+}

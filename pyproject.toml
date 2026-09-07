@@ -1,7 +1,7 @@
 [project]
 name = "aimai-kit"
-version = "0.2.0"
-description = "A framework-free LLM engineering toolkit: provider adapters, prompt and context engineering, structured outputs"
+version = "0.3.0"
+description = "A framework-free LLM engineering toolkit: provider adapters, prompt engineering, structured outputs and a safe tool layer"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
@@ -13,6 +13,7 @@ keywords = [
     "gemini",
     "prompt-engineering",
     "structured-outputs",
+    "tool-calling",
     "context-engineering",
 ]
 classifiers = [
